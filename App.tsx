@@ -42,40 +42,67 @@ const App: React.FC = () => {
 
   // Initialize Music
   useEffect(() => {
-    // Using a royalty-free track
-    const audioUrl = "https://cdn.pixabay.com/download/audio/2022/03/24/audio_33385e0546.mp3?filename=mystery-search-19345.mp3"; 
-    
-    const audio = new Audio(audioUrl);
-    audio.loop = true;
-    audio.volume = 0.3;
-    audioRef.current = audio;
+    try {
+        // Using a royalty-free track
+        const audioUrl = "https://cdn.pixabay.com/download/audio/2022/03/24/audio_33385e0546.mp3?filename=mystery-search-19345.mp3"; 
+        
+        const audio = new Audio(audioUrl);
+        audio.loop = true;
+        audio.volume = 0.3;
+        
+        // Handle loading errors gracefully
+        audio.addEventListener('error', (e) => {
+            console.warn("Audio failed to load", e);
+        });
+
+        audioRef.current = audio;
+    } catch (e) {
+        console.warn("Audio initialization failed", e);
+    }
 
     return () => {
-      audio.pause();
-      audioRef.current = null;
+      if (audioRef.current) {
+          try {
+            audioRef.current.pause();
+          } catch (e) {}
+          audioRef.current = null;
+      }
     };
   }, []);
 
   const toggleMusic = () => {
     if (!audioRef.current) return;
     
-    if (gameState.isMusicPlaying) {
-        audioRef.current.pause();
-    } else {
-        audioRef.current.play().catch(e => console.log("Audio play failed interaction required", e));
+    try {
+        if (gameState.isMusicPlaying) {
+            audioRef.current.pause();
+        } else {
+            const playPromise = audioRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.warn("Audio play blocked or failed", error);
+                    // If play fails, force state back to off
+                    setGameState(prev => ({ ...prev, isMusicPlaying: false }));
+                });
+            }
+        }
+        setGameState(prev => ({ ...prev, isMusicPlaying: !prev.isMusicPlaying }));
+    } catch (e) {
+        console.warn("Toggle music failed", e);
     }
-    setGameState(prev => ({ ...prev, isMusicPlaying: !prev.isMusicPlaying }));
   };
 
   const toggleVibration = () => {
       const newVal = !gameState.vibrationEnabled;
       setGameState(prev => ({ ...prev, vibrationEnabled: newVal }));
-      if (newVal && navigator.vibrate) navigator.vibrate(50);
+      if (newVal && navigator.vibrate) {
+          try { navigator.vibrate(50); } catch(e){}
+      }
   };
 
   const vibrate = (pattern: number | number[]) => {
       if (gameState.vibrationEnabled && navigator.vibrate) {
-          navigator.vibrate(pattern);
+          try { navigator.vibrate(pattern); } catch(e){}
       }
   };
 

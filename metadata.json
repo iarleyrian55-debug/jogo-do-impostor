@@ -2,7 +2,7 @@
   "name": "Jogo do Impostor",
   "short_name": "Impostor",
   "description": "Um jogo social de dedução offline para jogar com amigos em um único celular.",
-  "start_url": "/",
+  "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#000000",
