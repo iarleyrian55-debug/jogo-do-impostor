@@ -1,0 +1,5 @@
+{
+  "name": "Jogo do Impostor",
+  "description": "Um jogo social de dedução offline para jogar com amigos em um único celular. Descubra quem é o impostor!",
+  "requestFramePermissions": []
+}
